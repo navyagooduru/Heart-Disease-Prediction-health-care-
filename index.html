@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Risk Prediction</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        h1, h2 {
+            color: #d9004c;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        #predict-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, select, button {
+            font-size: 1rem;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #d9004c;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #a30039;
+        }
+        #prediction-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f0f7ff;
+            border: 1px solid #b3d7ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Heart Disease Risk Prediction</h1>
+        <p>Enter your medical data to get a prediction. (Based on a real ML model)</p>
+        
+        <form id="predict-form">
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" placeholder="e.g., 52" required>
+            </div>
+            <div class="form-group">
+                <label for="sex">Sex (1=M, 0=F)</label>
+                <input type="number" id="sex" placeholder="1 or 0" required>
+            </div>
+            <div class="form-group">
+                <label for="cp">Chest Pain Type (0-3)</label>
+                <input type="number" id="cp" placeholder="0, 1, 2, or 3" required>
+            </div>
+            <div class="form-group">
+                <label for="trestbps">Resting Blood Pressure</label>
+                <input type="number" id="trestbps" placeholder="e.g., 125" required>
+            </div>
+            <div class="form-group">
+                <label for="chol">Cholesterol (mg/dl)</label>
+                <input type="number" id="chol" placeholder="e.g., 212" required>
+            </div>
+            <div class="form-group">
+                <label for="fbs">Fasting Blood Sugar > 120 (1=T, 0=F)</label>
+                <input type="number" id="fbs" placeholder="1 or 0" required>
+            </div>
+            <div class="form-group">
+                <label for="restecg">Resting ECG (0-2)</label>
+                <input type="number" id="restecg" placeholder="0, 1, or 2" required>
+            </div>
+            <div class="form-group">
+                <label for="thalach">Max Heart Rate Achieved</label>
+                <input type="number" id="thalach" placeholder="e.g., 168" required>
+            </div>
+            <div class="form-group">
+                <label for="exang">Exercise Induced Angina (1=Y, 0=N)</label>
+                <input type="number" id="exang" placeholder="1 or 0" required>
+            </div>
+            <div class="form-group">
+                <label for="oldpeak">Oldpeak (ST depression)</label>
+                <input type="number" step="0.1" id="oldpeak" placeholder="e.g., 1.0" required>
+            </div>
+            <div class="form-group">
+                <label for="slope">Slope of ST segment (0-2)</label>
+                <input type="number" id="slope" placeholder="0, 1, or 2" required>
+            </div>
+            <div class="form-group">
+                <label for="ca">Number of Major Vessels (0-4)</label>
+                <input type="number" id="ca" placeholder="0-4" required>
+            </div>
+            <div class="form-group">
+                <label for="thal">Thal (0-3)</label>
+                <input type="number" id="thal" placeholder="0-3" required>
+            </div>
+            
+            <button type="submit">Get Prediction</button>
+        </form>
+
+        <div id="prediction-result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5000';
+        const predictForm = document.getElementById('predict-form');
+        const predictionResultDiv = document.getElementById('prediction-result');
+
+        async function handlePredictSubmit(event) {
+            event.preventDefault(); 
+            
+            const dataToSubmit = {
+                age: document.getElementById('age').value,
+                sex: document.getElementById('sex').value,
+                cp: document.getElementById('cp').value,
+                trestbps: document.getElementById('trestbps').value,
+                chol: document.getElementById('chol').value,
+                fbs: document.getElementById('fbs').value,
+                restecg: document.getElementById('restecg').value,
+                thalach: document.getElementById('thalach').value,
+                exang: document.getElementById('exang').value,
+                oldpeak: document.getElementById('oldpeak').value,
+                slope: document.getElementById('slope').value,
+                ca: document.getElementById('ca').value,
+                thal: document.getElementById('thal').value
+            };
+
+            predictionResultDiv.innerHTML = '<p>Getting prediction...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSubmit),
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Prediction failed');
+
+                predictionResultDiv.innerHTML = `
+                    <h3>Prediction Result:</h3>
+                    <p style="font-size: 1.2em; font-weight: bold; color: ${result.prediction === 1 ? '#d9004c' : '#007bff'};">
+                        ${result.message}
+                    </p>
+                    <p>Model Confidence: ${(result.probability * 100).toFixed(2)}%</p>
+                `;
+            } catch (error) {
+                console.error('Error during prediction:', error);
+                predictionResultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        predictForm.addEventListener('submit', handlePredictSubmit);
+    </script>
+</body>
+</html>
